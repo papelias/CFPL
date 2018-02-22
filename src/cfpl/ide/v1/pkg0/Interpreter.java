@@ -28,7 +28,7 @@ public class Interpreter { //temporary parser/interpreter merger
     
     private HashMap<String, Object> variables = new HashMap<>();
     //will finish this
-    final int[][] tableVar = {{ 1, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13}, //start state
+    /*final int[][] tableVar = {{ 1, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13}, //start state
                               {13,  2, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13}, 
                               {13, 13,  1,  3, 13, 13, 13, 13, 13, 13, 13, 13, 13},
                               {13, 13, 13, 13,  4,  5,  6,  7, 13, 13, 13, 13, 13},
@@ -41,7 +41,7 @@ public class Interpreter { //temporary parser/interpreter merger
                               {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 12, 13},
                               {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 12},
                               {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13},
-                              {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13}};
+                              {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13}};*/
                               //final state - 12, dead state - 13
             
     public Interpreter (List<Token> tokens) {
@@ -67,15 +67,17 @@ public class Interpreter { //temporary parser/interpreter merger
             }
             tokensLine[line - 1].add(t);
         }
-        
-        for (int i = 0; i < line; i++) {
+        if (tokensLine[0].get(0).getType() == EOF) {
+            CFPL.error(0, "NO START-STOP");
+            return;
+        } 
+        for (int i = 0; i < line && !CFPL.hadError; i++) {
             System.out.println(tokensLine[i].get(0).getType());
             if (tokensLine[i].get(0).getType() == VAR) {
-                System.out.println("VAR STATEMENT DETECTED");
                 if (foundStart) {
                     CFPL.error(i + 1, "VAR STATEMENTS ARE NOT ALLOWED INSIDE START-STOP");
                 }
-                else parseVar(tokensLine[i]);
+                else parseVar(tokensLine[i], i + 1);
             }
             else if (tokensLine[i].get(0).getType() == START) {
                 foundStart = true;
@@ -102,7 +104,7 @@ public class Interpreter { //temporary parser/interpreter merger
         }
     }
     
-    public void parseVar(List<Token> tokensLine) { //VAR STATEMENTS SHOULD BE THE PARAMETER
+    public void parseVar(List<Token> tokensLine, int line) { //VAR STATEMENTS SHOULD BE THE PARAMETER
         int state = 0; //skip ahead of the VAR transition
         Object temp = null;
         String identifier = "";
@@ -120,8 +122,14 @@ public class Interpreter { //temporary parser/interpreter merger
                     break;
                 case IDENTIFIER:
                     if (state == 1) {
-                        state = 2;
-                        identifier = (String)tokensLine.get(i).getLiteral();
+                        if (!variables.containsKey((String)tokensLine.get(i).getLiteral())) {
+                            state = 2;
+                            identifier = (String)tokensLine.get(i).getLiteral();
+                        }
+                        else {
+                            state = 7;
+                            CFPL.error(line, "DUPLICATE IDENTIFIER");
+                        }
                     }
                     else { 
                         state = 7;

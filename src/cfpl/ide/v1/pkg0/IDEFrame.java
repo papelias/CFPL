@@ -50,6 +50,8 @@ public class IDEFrame extends javax.swing.JFrame {
         setBackground(new java.awt.Color(0, 102, 102));
         setForeground(new java.awt.Color(51, 204, 0));
 
+        jPanel1.setName("CFPL IDE 1.0"); // NOI18N
+
         txtCode.setName("txtCode"); // NOI18N
         jScrollPane1.setViewportView(txtCode);
 
